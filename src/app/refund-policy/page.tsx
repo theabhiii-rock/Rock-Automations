@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-white">2. Released Milestone Funds</h2>
           <p>
-            Once a client explicitly inspects delivered code and clicks "Approve & Release Milestone", the funds (less the 10% platform fee) are disbursed to the professional. Released milestone funds are non-refundable through the platform.
+            Once a client explicitly inspects delivered code and clicks "Approve & Release Milestone", the funds (less the 20% platform fee) are disbursed to the professional. Released milestone funds are non-refundable through the platform.
           </p>
         </section>
 

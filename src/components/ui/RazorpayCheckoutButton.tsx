@@ -79,7 +79,7 @@ export default function RazorpayCheckoutButton({
 
       // Razorpay options
       const options = {
-        key: keyId || 'rzp_live_TaNGcTfOSL05Ds',
+        key: keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
         amount: amount * 100,
         currency: 'INR',
         name: businessName || 'ROCK AUTOMATIONS',

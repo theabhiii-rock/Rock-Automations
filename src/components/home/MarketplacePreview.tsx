@@ -99,7 +99,7 @@ export default function MarketplacePreview() {
             Hire Verified Automation & Web Specialists
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 font-normal">
-            Handpicked, identity-vetted talent under Rock Automations standards with 10% capped platform fees and 100% escrow protection.
+            Handpicked, identity-vetted talent under Rock Automations standards with 20% capped platform fees and 100% escrow protection.
           </p>
         </div>
 

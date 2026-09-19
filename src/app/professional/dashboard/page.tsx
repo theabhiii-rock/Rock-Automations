@@ -182,7 +182,7 @@ export default function ProfessionalDashboard() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
               <span className="text-white font-bold text-sm uppercase flex items-center gap-1.5">
                 <DollarSign className="w-4 h-4 text-amber-400" />
-                10% Platform Fee Transparency
+                20% Platform Fee Transparency
               </span>
               <span className="text-xs font-semibold text-amber-400">CLEAR LEDGER</span>
             </div>
@@ -193,14 +193,14 @@ export default function ProfessionalDashboard() {
                 <span>Project Value (Gross):</span>
                 <span className="font-semibold text-white">₹1,00,000 ($1,200)</span>
               </div>
-              <div className="flex justify-between items-center text-amber-700 font-medium">
-                <span>Platform Success Fee (10%):</span>
-                <span className="font-bold">-₹10,000 (-$120)</span>
+              <div className="flex justify-between items-center text-amber-500 font-medium">
+                <span>Platform Success Fee (20%):</span>
+                <span className="font-bold">-₹20,000 (-$240)</span>
               </div>
-              <div className="h-[1px] bg-slate-200 my-1" />
+              <div className="h-[1px] bg-slate-800 my-1" />
               <div className="flex justify-between items-center text-amber-400 text-sm font-bold">
                 <span>Engineer Net Payout:</span>
-                <span>₹90,000 ($1,080)</span>
+                <span>₹80,000 ($960)</span>
               </div>
               <div className="pt-1 text-xs text-slate-400">
                 Settled post-completion signoff. No hidden charges or silent deductions.

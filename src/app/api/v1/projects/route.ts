@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { execute, query, queryOne } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: 'You must be logged in to create a project' } },
         { status: 401 }
+      );
+    }
+
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`proj_${user.id}_${clientIp}`, 15, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many projects created. Please wait ${rateCheck.retryAfterSeconds} seconds.`,
+          },
+        },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
       );
     }
 
@@ -25,9 +41,18 @@ export async function POST(request: Request) {
       preferredProfessionalId,
     } = body;
 
-    if (!title || !description || !budgetMin || !budgetMax) {
+    if (!title || !description || budgetMin === undefined || budgetMax === undefined) {
       return NextResponse.json(
         { success: false, error: { code: 'VALIDATION_ERROR', message: 'Title, description, and budget range are required' } },
+        { status: 400 }
+      );
+    }
+
+    const bMin = parseFloat(budgetMin);
+    const bMax = parseFloat(budgetMax);
+    if (isNaN(bMin) || isNaN(bMax) || bMin <= 0 || bMax < bMin) {
+      return NextResponse.json(
+        { success: false, error: { code: 'VALIDATION_ERROR', message: 'Valid positive budget range required (budgetMax >= budgetMin > 0)' } },
         { status: 400 }
       );
     }

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TaNGcTfOSL05Ds';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '[REDACTED]';
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
 export interface CreateOrderParams {
   amount: number; // in INR rupees (will be converted to paise)
@@ -28,6 +28,10 @@ export async function createRazorpayOrder({
   receipt,
   notes = {},
 }: CreateOrderParams): Promise<RazorpayOrder> {
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    throw new Error('Razorpay server credentials are not configured in environment variables');
+  }
+
   const amountInPaise = Math.round(amount * 100);
   const receiptId = receipt || `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -69,16 +73,24 @@ export function verifyRazorpaySignature({
   signature: string;
 }): boolean {
   if (!orderId || !paymentId || !signature) return false;
+  if (!RAZORPAY_KEY_SECRET) {
+    console.error('Razorpay secret is not configured in server environment');
+    return false;
+  }
 
   const expectedSignature = crypto
     .createHmac('sha256', RAZORPAY_KEY_SECRET)
     .update(`${orderId}|${paymentId}`)
     .digest('hex');
 
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature, 'utf-8'),
-    Buffer.from(signature, 'utf-8')
-  );
+  const expectedBuffer = Buffer.from(expectedSignature, 'utf-8');
+  const signatureBuffer = Buffer.from(signature, 'utf-8');
+
+  if (expectedBuffer.length !== signatureBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
 }
 
 export const razorpayConfig = {

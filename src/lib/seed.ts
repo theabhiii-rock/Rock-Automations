@@ -801,10 +801,10 @@ export async function seedDatabase() {
     [now, now]
   );
 
-  // Platform Fee Record for Completed Project (10% Fee Demonstration)
+  // Platform Fee Record for Completed Project (20% Fee Demonstration)
   execute(
     `INSERT INTO platform_fees (id, project_id, gross_amount, fee_percentage, fee_amount, professional_net_amount, currency, status, created_at)
-     VALUES ('fee_1', 'proj_rev_1', 100000, 10, 10000, 90000, 'INR', 'COLLECTED', ?)`,
+     VALUES ('fee_1', 'proj_rev_1', 100000, 20, 20000, 80000, 'INR', 'COLLECTED', ?)`,
     [now]
   );
 

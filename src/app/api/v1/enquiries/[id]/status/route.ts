@@ -35,6 +35,17 @@ export async function PATCH(
       );
     }
 
+    // IDOR Protection: Verify caller is Admin, Enquiry Client, or Target Professional
+    const proProfile = queryOne<{ id: string }>('SELECT id FROM professional_profiles WHERE user_id = ?', [user.id]);
+    const isAuthorized = user.role === 'ADMIN' || enquiry.client_id === user.id || (proProfile && enquiry.professional_id === proProfile.id);
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'You are not authorized to update this enquiry status' } },
+        { status: 403 }
+      );
+    }
+
     const now = new Date().toISOString();
     execute('UPDATE enquiries SET status = ?, updated_at = ? WHERE id = ?', [status, now, id]);
 

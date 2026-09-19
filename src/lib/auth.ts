@@ -74,5 +74,33 @@ export async function getCurrentUser(request: Request): Promise<User | null> {
   if (!payload || !payload.userId) return null;
 
   const user = queryOne<User>('SELECT id, email, role, status, created_at, updated_at FROM users WHERE id = ?', [payload.userId]);
+  if (!user || user.status === 'SUSPENDED') return null;
   return user;
+}
+
+/**
+ * Defense-in-depth CSRF verification for cookie-authenticated state mutations
+ */
+export function validateCsrfOrigin(request: Request): boolean {
+  const method = request.method.toUpperCase();
+  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return true;
+
+  // Bearer tokens are not vulnerable to browser CSRF
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) return true;
+
+  // Only enforce if request relies on cookie auth
+  const cookieHeader = request.headers.get('cookie');
+  if (!cookieHeader || !cookieHeader.includes('auth_token=')) return true;
+
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+  if (!origin || !host) return true;
+
+  try {
+    const originHost = new URL(origin).host;
+    return originHost.toLowerCase() === host.toLowerCase();
+  } catch {
+    return false;
+  }
 }

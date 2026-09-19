@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createRazorpayOrder, razorpayConfig } from '@/lib/razorpay';
 import { getCurrentUser } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`rzp_order_${clientIp}`, 15, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many payment initialization requests. Please wait ${rateCheck.retryAfterSeconds} seconds.`,
+          },
+        },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
+      );
+    }
+
     const user = await getCurrentUser(request);
     const body = await request.json();
 
@@ -16,7 +32,8 @@ export async function POST(request: Request) {
       type = 'SERVICE_PLAN',
     } = body;
 
-    if (!amount || amount <= 0) {
+    const numAmount = Number(amount);
+    if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_AMOUNT', message: 'Valid payment amount is required' } },
         { status: 400 }
@@ -51,9 +68,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error('Razorpay create-order error:', error);
+    console.error('Razorpay create-order error:', error?.message || 'Payment error');
     return NextResponse.json(
-      { success: false, error: { code: 'PAYMENT_ERROR', message: error.message || 'Failed to initialize payment' } },
+      { success: false, error: { code: 'PAYMENT_ERROR', message: 'Failed to initialize payment. Please try again or contact support.' } },
       { status: 500 }
     );
   }

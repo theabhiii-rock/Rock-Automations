@@ -40,8 +40,8 @@ export default function TermsPage() {
             All client contracts facilitated through the platform are governed by our dynamic fee schedule:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-slate-300">
-            <li><strong>Platform Success Fee:</strong> A standard 10% platform service fee is deducted upon client release of milestone escrow funds (<code className="text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">Gross Amount - 10% = Net Professional Payout</code>).</li>
-            <li><strong>Annual Membership Fee:</strong> Professionals pay an annual membership fee (<code className="text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">₹7,000 / $70</code>) to cover manual identity vetting, compliance verification, and portfolio infrastructure.</li>
+            <li><strong>Platform Success Fee:</strong> A standard 20% platform service fee is deducted upon client release of milestone escrow funds (<code className="text-amber-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">Gross Amount - 20% = Net Professional Payout</code>).</li>
+            <li><strong>Annual Membership Fee:</strong> Professionals pay an annual membership fee (<code className="text-amber-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">₹4,999</code>) to cover manual identity vetting, compliance verification, and portfolio infrastructure.</li>
           </ul>
         </section>
 

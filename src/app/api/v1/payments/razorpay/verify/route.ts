@@ -40,6 +40,31 @@ export async function POST(request: Request) {
       );
     }
 
+    // Replay Attack & Duplicate Transaction Protection
+    const existingPayment = queryOne<{ id: string; user_id: string }>(
+      'SELECT id, user_id FROM payments WHERE provider_transaction_id = ?',
+      [razorpay_payment_id]
+    );
+    if (existingPayment) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          message: 'Payment already processed and recorded',
+          paymentId: existingPayment.id,
+          orderId: razorpay_order_id,
+          transactionId: razorpay_payment_id,
+        },
+      });
+    }
+
+    const paidAmount = Number(amount);
+    if (isNaN(paidAmount) || paidAmount <= 0) {
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_AMOUNT', message: 'Valid payment amount is required' } },
+        { status: 400 }
+      );
+    }
+
     // Determine or create User
     let userId = user ? user.id : null;
     const now = new Date().toISOString();
@@ -60,7 +85,6 @@ export async function POST(request: Request) {
     }
 
     const paymentId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-    const paidAmount = Number(amount) || 0;
 
     execute(
       `INSERT INTO payments (
@@ -98,9 +122,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error('Razorpay verify error:', error);
+    console.error('Razorpay verify error:', error?.message || 'Verification error');
     return NextResponse.json(
-      { success: false, error: { code: 'VERIFICATION_ERROR', message: error.message || 'Payment verification failed' } },
+      { success: false, error: { code: 'VERIFICATION_ERROR', message: 'Payment verification failed. Please contact support.' } },
       { status: 500 }
     );
   }

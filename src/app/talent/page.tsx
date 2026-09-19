@@ -98,7 +98,7 @@ export default function TalentMarketplace() {
                 <span>Zero Markup</span>
               </span>
               <span className="text-slate-700">•</span>
-              <span className="text-amber-400 font-bold font-mono">10% Success Fee Cap</span>
+              <span className="text-amber-400 font-bold font-mono">20% Success Fee Cap</span>
             </div>
           </div>
 

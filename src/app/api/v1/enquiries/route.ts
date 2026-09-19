@@ -2,9 +2,28 @@ import { NextResponse } from 'next/server';
 import { execute, query, queryOne } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`enq_${clientIp}`, 15, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many enquiry submissions. Please wait ${rateCheck.retryAfterSeconds} seconds before trying again.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) },
+        }
+      );
+    }
+
     const user = await getCurrentUser(request);
     const body = await request.json();
 
@@ -39,8 +58,23 @@ export async function POST(request: Request) {
     }
 
     const enquiryId = 'enq_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const clientId = user ? user.id : 'guest_' + Date.now();
     const now = new Date().toISOString();
+
+    let clientId = user ? user.id : '';
+    if (!clientId) {
+      const email = clientEmail || `guest_${Date.now()}@rockautomations.com`;
+      const existing = queryOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [email]);
+      if (existing) {
+        clientId = existing.id;
+      } else {
+        clientId = 'usr_guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        execute(
+          `INSERT INTO users (id, email, password_hash, role, status, created_at, updated_at)
+           VALUES (?, ?, 'NOPASSWORD', 'GUEST', 'ACTIVE', ?, ?)`,
+          [clientId, email, now, now]
+        );
+      }
+    }
 
     execute(
       `INSERT INTO enquiries (

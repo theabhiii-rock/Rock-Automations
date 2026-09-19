@@ -2,9 +2,28 @@ import { NextResponse } from 'next/server';
 import { execute, queryOne } from '@/lib/db';
 import { hashPassword, generateTokens } from '@/lib/auth';
 import { logAuditEvent } from '@/lib/audit';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`reg_${clientIp}`, 10, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many registration attempts. Please wait ${rateCheck.retryAfterSeconds} seconds before trying again.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) },
+        }
+      );
+    }
+
     const {
       email,
       password,
@@ -150,7 +169,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24, // 1 day (aligned with accessToken expiration)
     });
 
     return response;

@@ -95,6 +95,26 @@ export async function PATCH(
       );
     }
 
+    // IDOR Protection: Verify caller is Admin, Project Owner, or Assigned Professional
+    const isOwner = project.client_id === user.id;
+    const isAdmin = user.role === 'ADMIN';
+    const proProfile = queryOne<{ id: string }>('SELECT id FROM professional_profiles WHERE user_id = ?', [user.id]);
+    const isAssignedPro = proProfile && project.assigned_professional_id === proProfile.id;
+
+    if (!isAdmin && !isOwner && !isAssignedPro) {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'You are not authorized to modify this project' } },
+        { status: 403 }
+      );
+    }
+
+    if (assignedProfessionalId && !isAdmin && !isOwner) {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'Only the project client or admin can assign a professional' } },
+        { status: 403 }
+      );
+    }
+
     const now = new Date().toISOString();
     let updateSql = 'UPDATE projects SET status = ?, updated_at = ?';
     const updateParams: any[] = [status, now];
@@ -120,7 +140,7 @@ export async function PATCH(
     // When project transitions to COMPLETED, calculate and record Platform Fee!
     if (status === 'COMPLETED') {
       const feeSetting = queryOne<{ value: string }>('SELECT value FROM system_settings WHERE key = ?', ['platform_fee_percent']);
-      const feePercentage = parseFloat(feeSetting?.value || '10');
+      const feePercentage = parseFloat(feeSetting?.value || '20');
       const gross = finalAmount || project.budget_max || project.budget_min;
 
       const feeCalc = calculatePlatformFee(gross, feePercentage, project.currency);

@@ -24,23 +24,23 @@ export default function FeePolicyPage() {
 
       <div className="bg-[#0D111A] border border-amber-500/20 p-8 rounded-2xl shadow-xl space-y-8 text-sm text-slate-300 leading-relaxed font-normal">
         <section className="space-y-4">
-          <h2 className="text-lg font-bold text-white">1. The 10% Success Fee Formula</h2>
+          <h2 className="text-lg font-bold text-white">1. The 20% Success Fee Formula</h2>
           <p>
             Unlike opaque marketplace commissions with hidden tier multipliers, our fee schedule is simple, deterministic, and auditable on every milestone:
           </p>
 
           <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 font-mono text-xs sm:text-sm text-center text-white space-y-2">
-            <div className="text-indigo-600 font-bold">
-              NET PROFESSIONAL PAYOUT = GROSS ESCROW MILESTONE - (GROSS × 10%)
+            <div className="text-amber-400 font-bold">
+              NET PROFESSIONAL PAYOUT = GROSS ESCROW MILESTONE - (GROSS × 20%)
             </div>
             <div className="text-xs text-slate-400">
-              Example: On a $5,000 Milestone → $500 Platform Fee → $4,500 Disbursed to Professional
+              Example: On a ₹50,000 Milestone → ₹10,000 Platform Fee (20%) → ₹40,000 Disbursed to Professional (80%)
             </div>
           </div>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-bold text-white">2. What the 10% Success Fee Funds</h2>
+          <h2 className="text-lg font-bold text-white">2. What the 20% Success Fee Funds</h2>
           <ul className="list-disc pl-5 space-y-2 text-slate-300">
             <li>Escrow fund custody, fraud prevention, and anti-chargeback guarantees.</li>
             <li>Multi-tier identity and technical verification pipelines.</li>
@@ -52,7 +52,7 @@ export default function FeePolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-white">3. Annual Professional Membership Fee</h2>
           <p>
-            An annual fee of <code className="text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">₹7,000 / $70</code> is billed upon verification submission. This directly subsidizes the senior engineering time required to inspect applicant source repositories and verify personal credentials.
+            An annual fee of <code className="text-amber-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">₹4,999</code> is billed upon verification submission. This directly subsidizes the senior engineering time required to inspect applicant source repositories and verify personal credentials.
           </p>
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
             <strong>Disclosure:</strong> The membership fee does not guarantee client placement, job volume, or revenue. It grants access to the verified network and indexed directory presence.

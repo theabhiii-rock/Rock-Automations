@@ -3,9 +3,28 @@ import { queryOne } from '@/lib/db';
 import { verifyPassword, generateTokens } from '@/lib/auth';
 import { User } from '@/lib/types';
 import { logAuditEvent } from '@/lib/audit';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`login_${clientIp}`, 10, 60 * 1000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Too many login attempts. Please wait ${rateCheck.retryAfterSeconds} seconds before trying again.`,
+          },
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) },
+        }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -78,7 +97,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24, // 1 day (aligned with accessToken expiration)
     });
 
     return response;
