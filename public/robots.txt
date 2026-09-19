@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /client/
+Disallow: /professional/dashboard
+
+Sitemap: https://rockautomations.com/sitemap.xml

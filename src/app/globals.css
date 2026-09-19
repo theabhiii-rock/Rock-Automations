@@ -1,26 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-canvas: #07090E;
+    --bg-surface: #0D111A;
+    --bg-surface-subtle: #131826;
+    --border-subtle: rgba(245, 158, 11, 0.18);
+    --border-focus: #F59E0B;
+    
+    --color-primary: #F59E0B;
+    --color-primary-hover: #D97706;
+    --color-emerald: #10B981;
+  }
+
+  body {
+    background-color: #07090E;
+    background-image: 
+      radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(217, 119, 6, 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: #E2E8F0;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #FFFFFF;
+  }
+
+  code, pre, .font-mono-tech {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Dark Cyber Gold Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #07090E;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.5);
+}
+
+/* Crisp Elevated Dark Gold Cards */
+.glass-panel, .clean-card {
+  background: #0D111A;
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  box-shadow: 
+    0 1px 3px 0 rgba(0, 0, 0, 0.4), 
+    0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  color: #F8FAFC;
+}
+
+.glass-panel-interactive, .clean-card-interactive {
+  background: #0D111A;
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  box-shadow: 
+    0 1px 3px 0 rgba(0, 0, 0, 0.4), 
+    0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #F8FAFC;
+}
+
+.glass-panel-interactive:hover, .clean-card-interactive:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 
+    0 12px 28px -4px rgba(245, 158, 11, 0.12), 
+    0 4px 10px -2px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Founder Spotlight Card with Dark Gold Aura */
+.founder-gradient-card {
+  position: relative;
+  background: #0D111A;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 1.25rem;
+  box-shadow: 
+    0 10px 30px -5px rgba(245, 158, 11, 0.1),
+    0 0 0 1px rgba(245, 158, 11, 0.15);
+}
+
+/* Primary Gold Button */
+.btn-cyan, .btn-primary {
+  position: relative;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #000000 !important;
+  font-weight: 700;
+  border-radius: 0.625rem;
+  box-shadow: 0 2px 8px 0 rgba(245, 158, 11, 0.35);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-cyan:hover, .btn-primary:hover {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  box-shadow: 0 4px 16px 0 rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Secondary Dark Outline Button */
+.btn-gold, .btn-secondary {
+  position: relative;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #F8FAFC !important;
+  background: #0D111A;
+  font-weight: 600;
+  border-radius: 0.625rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-gold:hover, .btn-secondary:hover {
+  background: #131826;
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #FBBF24 !important;
+  transform: translateY(-1px);
+}
+
+/* Text Gradients */
+.text-gradient-primary {
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-silver {
+  color: #FFFFFF;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #F59E0B 0%, #FDE68A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #D97706 0%, #F59E0B 50%, #FDE68A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Verified Status Badge */
+.badge-verified {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34D399;
+  font-weight: 600;
 }
