@@ -74,8 +74,12 @@ All severe horizontal authorization bypasses (IDOR) on projects, conversations, 
 | `AUTH-04` | Tampered JWT signature | HTTP 401 Unauthorized | HTTP 401 `{"code":"UNAUTHORIZED"}` | ✅ PASS |
 | `AUTH-05` | Unauthenticated protected route access | HTTP 401 Unauthorized | HTTP 401 `{"code":"UNAUTHORIZED"}` | ✅ PASS |
 
-- **Password Hashing**: Salted scrypt derivation with memory/cost parameters (`scryptSync(password, salt, 64)`).
-- **JWT Protection**: HMAC-SHA256 tokens verified against server-side secret with expiration timestamps.
+- **Password Algorithm**: BCRYPT
+- **Library/API**: `bcryptjs` (v3.0.3)
+- **Parameters**: 10 salt rounds (1024 cost iterations via `bcrypt.genSalt(10)`)
+- **Storage**: Modular Crypt Format (`$2b$10$...`), 60-character string stored in `users.password_hash`
+- **Verification**: Timing-safe verification via `bcrypt.compare(password, hash)`
+- **JWT Protection**: HMAC-SHA256 tokens verified against server-side secret with expiration timestamps (1 day access, 30 days refresh).
 - **Session Revocation**: `/api/v1/auth/logout` sets explicit cookie deletion headers with `Max-Age=0` and `HttpOnly; Path=/; SameSite=Lax`.
 
 ---
@@ -269,7 +273,7 @@ X-DNS-Prefetch-Control: on
 
 | Vector | Score (1–10) | Evaluation Rationale |
 |---|:---:|---|
-| Credential Stuffing & Brute Force | **9 / 10** | 10 req/min rate limit per IP on `/login` + salted scrypt password hashing. |
+| Credential Stuffing & Brute Force | **9 / 10** | 10 req/min rate limit per IP on `/login` + salted bcrypt password hashing (10 rounds). |
 | Horizontal Privilege Escalation (IDOR) | **10 / 10** | Database-level composite key checks across all project, message, and enquiry routes. |
 | Vertical Privilege Escalation | **10 / 10** | Strict JWT role checking on all `/admin/*` routes; clients and pros blocked. |
 | Payment Forgery / Amount Tampering | **10 / 10** | Server-side Razorpay order generation + HMAC-SHA256 constant-time signature verification. |

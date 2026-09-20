@@ -143,10 +143,14 @@ TEST SUITE SUMMARY: 33 PASSED, 0 FAILED (TOTAL: 33)
 
 ### 7. AUTHENTICATION HARDENING
 
-- **Password Cryptography**: Salted scrypt derivation (`bcryptjs.hash(password, 10)`).
+- **Password Algorithm**: BCRYPT
+- **Library/API**: `bcryptjs` (v3.0.3)
+- **Parameters**: 10 salt rounds (1024 cost iterations via `bcrypt.genSalt(10)`)
+- **Storage**: Modular Crypt Format (`$2b$10$...`), 60-character string stored in `users.password_hash`
+- **Verification**: Timing-safe verification via `bcrypt.compare(password, hash)`
 - **Session Tokens**: Signed JWTs using `jose.SignJWT` with algorithm lock (`HS256`), issued-at timestamps, and expiration deadlines (1 day for access tokens, 30 days for refresh tokens).
 - **Dynamic Account Revocation**: `getCurrentUser` queries live user state from `users` table on every request. If an admin marks an account `status: 'SUSPENDED'`, all existing JWTs for that account are instantly blocked.
-- **Session Cookie Security**: `HttpOnly; Path=/; SameSite=Lax; MaxAge=604800`. `Secure` flag enabled in production.
+- **Session Cookie Security**: `HttpOnly; Path=/; SameSite=Lax; MaxAge=86400` (1 day, synchronized with 1-day JWT access token). `Secure` flag enabled in production.
 
 ---
 

@@ -20,16 +20,18 @@ import {
   Lock,
   RefreshCw,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Inbox
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
 
-  const [activeTab, setActiveTab] = useState<"stats" | "verifications" | "settings" | "audit">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "verifications" | "settings" | "audit" | "enquiries">("stats");
   const [stats, setStats] = useState<any>(null);
   const [verifications, setVerifications] = useState<any[]>([]);
+  const [enquiries, setEnquiries] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({
     membership_fee_inr: 7000,
     membership_fee_usd: 70,
@@ -48,17 +50,19 @@ export default function AdminDashboardPage() {
     setError("");
 
     try {
-      const [statsRes, verifRes, setRes, logsRes] = await Promise.all([
+      const [statsRes, verifRes, setRes, logsRes, enqRes] = await Promise.all([
         fetch("/api/v1/admin/stats").then((r) => r.json()),
         fetch("/api/v1/admin/verifications").then((r) => r.json()),
         fetch("/api/v1/admin/settings").then((r) => r.json()),
         fetch("/api/v1/admin/audit-logs").then((r) => r.json()),
+        fetch("/api/v1/enquiries").then((r) => r.json()).catch(() => ({ success: false })),
       ]);
 
       if (statsRes.success) setStats(statsRes.data);
       if (verifRes.success) setVerifications(verifRes.data || []);
       if (setRes.success) setSettings(setRes.data || {});
       if (logsRes.success) setAuditLogs(logsRes.data || []);
+      if (enqRes.success) setEnquiries(enqRes.data?.enquiries || []);
     } catch (err: any) {
       setError("Failed to load administration data. Check database permissions.");
     } finally {
@@ -212,12 +216,24 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab("audit")}
           className={`pb-3 text-sm font-semibold transition cursor-pointer flex items-center gap-2 border-b-2 whitespace-nowrap ${
             activeTab === "audit"
-              ? "border-indigo-600 text-amber-400"
+              ? "border-amber-400 text-amber-400"
               : "border-transparent text-slate-400 hover:text-white"
           }`}
         >
           <Lock className="w-4 h-4" />
           <span>Audit Logs</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("enquiries")}
+          className={`pb-3 text-sm font-semibold transition cursor-pointer flex items-center gap-2 border-b-2 whitespace-nowrap ${
+            activeTab === "enquiries"
+              ? "border-amber-400 text-amber-400"
+              : "border-transparent text-slate-400 hover:text-white"
+          }`}
+        >
+          <Inbox className="w-4 h-4" />
+          <span>Client Enquiries ({enquiries.length})</span>
         </button>
       </div>
 
@@ -513,6 +529,82 @@ export default function AdminDashboardPage() {
                       <Clock className="w-3 h-3" />
                       {new Date(log.created_at).toLocaleString()}
                     </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: CLIENT ENQUIRIES */}
+      {activeTab === "enquiries" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white uppercase flex items-center gap-2">
+              <Inbox className="w-5 h-5 text-amber-400" />
+              All Client Project Enquiries ({enquiries.length})
+            </h3>
+            <span className="text-xs text-slate-400">Incoming Direct Leads Across Platform</span>
+          </div>
+
+          <div className="space-y-4">
+            {enquiries.length === 0 ? (
+              <div className="p-12 text-center bg-[#0D111A] rounded-2xl border border-slate-800 text-slate-400 text-xs">
+                No client enquiries have been submitted yet.
+              </div>
+            ) : (
+              enquiries.map((enq) => (
+                <div
+                  key={enq.id}
+                  className="p-6 rounded-2xl bg-[#0D111A] border border-amber-500/20 shadow-md space-y-4 text-xs"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-[10px] uppercase">
+                          {enq.status}
+                        </span>
+                        <h4 className="text-sm font-extrabold text-white">{enq.project_title}</h4>
+                      </div>
+                      <p className="text-slate-400 text-xs mt-1">
+                        Client: <span className="text-white font-semibold">{enq.client_name}</span> ({enq.client_email}) &bull; Target: <span className="text-amber-400 font-semibold">{enq.professional_name || enq.professional_id}</span>
+                      </p>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-bold text-white block">
+                        {formatPrice(enq.budget, enq.currency)}
+                      </span>
+                      <span className="text-[11px] text-slate-400">Timeline: {enq.timeline}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#07090E] border border-slate-800/90 text-slate-300 leading-relaxed font-mono text-xs">
+                    "{enq.message}"
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-slate-500" />
+                      Received: {new Date(enq.created_at).toLocaleString()}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://wa.me/916209817520?text=${encodeURIComponent(`Client Lead (${enq.project_title}): ${enq.client_name} - Email: ${enq.client_email} - Budget: ${enq.currency} ${enq.budget} - Message: ${enq.message}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-600 hover:text-white transition font-semibold flex items-center gap-1"
+                      >
+                        Forward to WhatsApp
+                      </a>
+                      <a
+                        href={`mailto:${enq.client_email}?subject=${encodeURIComponent(`Response to your inquiry: ${enq.project_title}`)}`}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition font-semibold"
+                      >
+                        Reply via Email
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))

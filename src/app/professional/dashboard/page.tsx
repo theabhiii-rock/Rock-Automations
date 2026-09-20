@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Send,
   Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function ProfessionalDashboard() {
@@ -23,6 +24,8 @@ export default function ProfessionalDashboard() {
 
   const [enquiries, setEnquiries] = useState<any[]>([]);
   const [portfolio, setPortfolio] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [calcBudget, setCalcBudget] = useState<number>(50000);
   const [loading, setLoading] = useState(true);
 
   // Add Project Modal State
@@ -37,20 +40,37 @@ export default function ProfessionalDashboard() {
 
   const fetchData = async () => {
     try {
-      const [enqRes, portRes] = await Promise.all([
+      const [enqRes, portRes, projRes] = await Promise.all([
         fetch('/api/v1/enquiries'),
         fetch('/api/v1/portfolio'),
+        fetch('/api/v1/projects'),
       ]);
-      const [enqData, portData] = await Promise.all([enqRes.json(), portRes.json()]);
+      const [enqData, portData, projData] = await Promise.all([
+        enqRes.json(),
+        portRes.json(),
+        projRes.json(),
+      ]);
 
-      if (enqData.success) setEnquiries(enqData.data.enquiries || []);
-      if (portData.success) setPortfolio(portData.data.projects || []);
+      if (enqData.success) setEnquiries(enqData.data?.enquiries || []);
+      if (portData.success) setPortfolio(portData.data?.projects || []);
+      if (projData.success) setProjects(projData.data || []);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
   };
+
+  const completedProjects = projects.filter((p) => p.status === 'COMPLETED');
+  const realGrossEarnings = completedProjects.reduce(
+    (sum, p) => sum + (p.budget_max || p.budget_min || 0),
+    0
+  );
+  const realNetEarnings = realGrossEarnings * 0.8; // 80% net after 20% platform fee
+  const integrityScore = Math.min(
+    100,
+    50 + (portfolio.length > 0 ? 30 : 0) + (enquiries.length > 0 ? 20 : 0)
+  );
 
   useEffect(() => {
     fetchData();
@@ -131,16 +151,37 @@ export default function ProfessionalDashboard() {
         </div>
       </div>
 
+      {/* Guest Warning Banner if not logged in */}
+      {!user && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-amber-500/5">
+          <div className="flex items-center gap-3.5">
+            <AlertCircle className="w-6 h-6 text-amber-400 flex-shrink-0" />
+            <div>
+              <div className="text-sm font-bold text-amber-400">Aap Abhi Logged In Nahi Hain (Guest Mode)</div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Client enquiries aur leads dekhne ke liye apne registered account (<strong className="text-white">abhishek@platform.com</strong>) se Log In karein.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/login"
+            className="btn-primary px-5 py-2.5 text-xs font-bold rounded-xl whitespace-nowrap shadow-md shadow-amber-500/20"
+          >
+            Log In Now →
+          </a>
+        </div>
+      )}
+
       {/* Top Metric Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-[#0D111A] p-5 rounded-2xl border border-amber-500/20 shadow-sm space-y-2">
           <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Profile Integrity</div>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-extrabold text-white">96%</span>
-            <span className="text-xs font-semibold text-emerald-600">Audited</span>
+            <span className="text-2xl font-extrabold text-white">{integrityScore}%</span>
+            <span className="text-xs font-semibold text-emerald-400">Verified</span>
           </div>
           <div className="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-emerald-950/400 h-full w-[96%]" />
+            <div className="bg-amber-400 h-full transition-all duration-500" style={{ width: `${integrityScore}%` }} />
           </div>
         </div>
 
@@ -148,7 +189,7 @@ export default function ProfessionalDashboard() {
           <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Membership Status</div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-amber-400">ACTIVE</span>
-            <span className="text-xs text-slate-400">312 days left</span>
+            <span className="text-xs text-slate-400">Verified Pro</span>
           </div>
           <p className="text-xs text-slate-400">100% Escrow Protection active</p>
         </div>
@@ -163,14 +204,16 @@ export default function ProfessionalDashboard() {
         </div>
 
         <div className="bg-[#0D111A] p-5 rounded-2xl border border-amber-500/20 shadow-sm space-y-2">
-          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Earnings</div>
+          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Earnings (Net)</div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-extrabold text-white">
-              {currency === 'INR' ? '₹1,90,000' : '$2,280'}
+              {formatPrice(realNetEarnings, currency)}
             </span>
-            <span className="text-xs font-semibold text-emerald-600">+18% MoM</span>
+            <span className="text-xs font-semibold text-emerald-400">
+              {completedProjects.length > 0 ? `${completedProjects.length} Settled` : 'Real Balance'}
+            </span>
           </div>
-          <p className="text-xs text-slate-400">Direct bank settlement</p>
+          <p className="text-xs text-slate-400">80% net settled after milestone signoff</p>
         </div>
       </div>
 
@@ -184,55 +227,73 @@ export default function ProfessionalDashboard() {
                 <DollarSign className="w-4 h-4 text-amber-400" />
                 20% Platform Fee Transparency
               </span>
-              <span className="text-xs font-semibold text-amber-400">CLEAR LEDGER</span>
+              <span className="text-xs font-semibold text-amber-400">OFFICIAL POLICY</span>
             </div>
 
-            {/* Fee Breakdown Card */}
+            {/* Fee Breakdown Calculator */}
             <div className="p-4 rounded-xl bg-[#07090E] border border-slate-800 space-y-3 text-xs">
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="font-semibold">Simulate Project Budget:</span>
+                <input
+                  type="number"
+                  min="1000"
+                  step="1000"
+                  value={calcBudget}
+                  onChange={(e) => setCalcBudget(Math.max(0, parseFloat(e.target.value) || 0))}
+                  className="w-32 px-2.5 py-1 bg-[#0D111A] border border-slate-700 rounded-lg text-white text-right text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+              <div className="h-[1px] bg-slate-800 my-1" />
               <div className="flex justify-between items-center text-slate-300">
                 <span>Project Value (Gross):</span>
-                <span className="font-semibold text-white">₹1,00,000 ($1,200)</span>
+                <span className="font-semibold text-white">{formatPrice(calcBudget, currency)}</span>
               </div>
               <div className="flex justify-between items-center text-amber-500 font-medium">
                 <span>Platform Success Fee (20%):</span>
-                <span className="font-bold">-₹20,000 (-$240)</span>
+                <span className="font-bold">-{formatPrice(calcBudget * 0.2, currency)}</span>
               </div>
               <div className="h-[1px] bg-slate-800 my-1" />
               <div className="flex justify-between items-center text-amber-400 text-sm font-bold">
-                <span>Engineer Net Payout:</span>
-                <span>₹80,000 ($960)</span>
+                <span>Your Net Payout (80%):</span>
+                <span>{formatPrice(calcBudget * 0.8, currency)}</span>
               </div>
-              <div className="pt-1 text-xs text-slate-400">
-                Settled post-completion signoff. No hidden charges or silent deductions.
+              <div className="pt-1 text-[11px] text-slate-400">
+                Settled automatically post-completion signoff. Zero upfront fee, zero hidden deductions.
               </div>
             </div>
 
-            {/* Settlement Records */}
+            {/* Real Settlement Records */}
             <div className="space-y-2 pt-2">
-              <span className="text-xs uppercase font-semibold text-slate-400 block">Recent Settlement Records</span>
-              <div className="space-y-2 text-xs">
-                <div className="p-3.5 rounded-xl bg-[#07090E] border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <div className="text-white font-semibold">Autonomous Support Agent</div>
-                    <div className="text-xs text-slate-400">Gross: ₹1,00,000 | Fee: -₹10,000</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-amber-400 font-bold">₹90,000</div>
-                    <div className="text-[10px] font-semibold text-emerald-400">SETTLED</div>
-                  </div>
+              <span className="text-xs uppercase font-semibold text-slate-400 block">Settlement History</span>
+              {completedProjects.length === 0 ? (
+                <div className="p-6 rounded-xl bg-[#07090E] border border-slate-800/80 text-center py-6 space-y-1.5">
+                  <Clock className="w-5 h-5 text-slate-500 mx-auto" />
+                  <p className="text-xs font-semibold text-slate-300">No Settlement Records Yet</p>
+                  <p className="text-[11px] text-slate-500">
+                    Completed client milestones and approved escrow releases will automatically generate payout settlement entries here.
+                  </p>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-[#07090E] border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <div className="text-white font-semibold">Enterprise RAG Knowledge System</div>
-                    <div className="text-xs text-slate-400">Gross: ₹1,00,000 | Fee: -₹10,000</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-amber-400 font-bold">₹90,000</div>
-                    <div className="text-[10px] font-semibold text-emerald-400">SETTLED</div>
-                  </div>
+              ) : (
+                <div className="space-y-2 text-xs">
+                  {completedProjects.map((p) => {
+                    const gross = p.budget_max || p.budget_min || 0;
+                    const fee = gross * 0.2;
+                    const net = gross * 0.8;
+                    return (
+                      <div key={p.id} className="p-3.5 rounded-xl bg-[#07090E] border border-slate-800 flex items-center justify-between">
+                        <div>
+                          <div className="text-white font-semibold">{p.title}</div>
+                          <div className="text-xs text-slate-400">Gross: {formatPrice(gross, currency)} | Fee (20%): -{formatPrice(fee, currency)}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-amber-400 font-bold">{formatPrice(net, currency)}</div>
+                          <div className="text-[10px] font-semibold text-emerald-400">SETTLED</div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

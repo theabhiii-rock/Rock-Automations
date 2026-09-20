@@ -566,17 +566,27 @@ export default function ProfessionalProfilePage() {
 
             {enquirySent ? (
               <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-center space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
+                <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
                 <h4 className="font-bold text-white text-base">Enquiry Sent!</h4>
                 <p className="text-sm text-slate-400 leading-relaxed">
                   Your enquiry has been delivered. {data.full_name} will review and respond directly.
                 </p>
-                <button
-                  onClick={() => setEnquirySent(false)}
-                  className="btn-secondary px-4 py-2 text-xs font-semibold rounded-xl cursor-pointer"
-                >
-                  Send Another
-                </button>
+                <div className="pt-2 flex flex-col gap-2">
+                  <a
+                    href={`https://wa.me/916209817520?text=${encodeURIComponent(`Hi Abhishek, I just submitted an enquiry on Rock Automations for "${enquiryForm.projectTitle}" (Budget: ${currency} ${enquiryForm.budget}).`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-md shadow-emerald-900/30"
+                  >
+                    <span>Instant WhatsApp Connect (+91 6209817520)</span>
+                  </a>
+                  <button
+                    onClick={() => setEnquirySent(false)}
+                    className="btn-secondary px-4 py-2 text-xs font-semibold rounded-xl cursor-pointer"
+                  >
+                    Send Another
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleEnquirySubmit} className="space-y-4">
