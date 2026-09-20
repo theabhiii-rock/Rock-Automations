@@ -9,12 +9,31 @@ export function getDatabase(): DatabaseSync {
     return dbInstance;
   }
 
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  let dbPath: string;
+
+  // Handle serverless read-only filesystems (e.g. Vercel / AWS Lambda)
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    const tmpDataDir = path.join('/tmp', 'data');
+    if (!fs.existsSync(tmpDataDir)) {
+      fs.mkdirSync(tmpDataDir, { recursive: true });
+    }
+    dbPath = path.join(tmpDataDir, 'platform.db');
+    const bundledDb = path.join(process.cwd(), 'data', 'platform.db');
+    if (!fs.existsSync(dbPath) && fs.existsSync(bundledDb)) {
+      try {
+        fs.copyFileSync(bundledDb, dbPath);
+      } catch (err) {
+        console.error('Failed to copy initial platform.db to /tmp:', err);
+      }
+    }
+  } else {
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    dbPath = path.join(dataDir, 'platform.db');
   }
 
-  const dbPath = path.join(dataDir, 'platform.db');
   const db = new DatabaseSync(dbPath);
 
   // Initialize PRAGMAs
