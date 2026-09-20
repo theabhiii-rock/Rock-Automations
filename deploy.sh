@@ -4,7 +4,7 @@
 # ==============================================================================
 set -euo pipefail
 
-DOMAIN="${1:-rockautomations.com}"
+DOMAIN="${1:-rockautomations.in}"
 APP_DIR="/var/www/rock-automations"
 
 echo "=========================================================="
