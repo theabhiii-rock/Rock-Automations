@@ -16,14 +16,14 @@ export const metadata: Metadata = {
   title: 'ROCK AUTOMATIONS — AI Automation, Outreach & Growth Systems',
   description:
     'ROCK AUTOMATIONS builds AI-powered lead discovery, outreach, websites and business automation systems for growing businesses.',
-  metadataBase: new URL('https://rockautomations.com'),
+  metadataBase: new URL('https://www.rockautomations.in'),
   openGraph: {
     title: 'ROCK AUTOMATIONS — AUTOMATE • OUTREACH • WEBSITES • GROWTH',
     description:
       'We Find, Message, Build & Grow Your Business Automatically. AI-powered client acquisition, digital presence and business automation systems for growing businesses.',
-    url: 'https://rockautomations.com',
+    url: 'https://www.rockautomations.in',
     siteName: 'ROCK AUTOMATIONS',
-    locale: 'en_US',
+    locale: 'en_IN',
     type: 'website',
   },
   robots: {
