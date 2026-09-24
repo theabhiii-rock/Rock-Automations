@@ -8,11 +8,13 @@ interface CurrencyContextType {
   setCurrency: (c: Currency) => void;
   toggleCurrency: () => void;
   formatPrice: (amount: number, sourceCurrency?: Currency) => string;
+  convertAmount: (amount: number, sourceCurrency: Currency, targetCurrency?: Currency) => number;
+  rate: number;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-const INR_PER_USD = 83.5;
+export const INR_PER_USD = 83.5;
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<Currency>('INR');
@@ -34,14 +36,25 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     setCurrency(next);
   };
 
-  const formatPrice = (amount: number, sourceCurrency: Currency = 'USD'): string => {
-    let finalAmount = amount;
+  const convertAmount = (
+    amount: number,
+    sourceCurrency: Currency,
+    targetCurrency: Currency = currency
+  ): number => {
+    if (isNaN(amount) || amount === 0) return 0;
+    if (sourceCurrency === targetCurrency) return amount;
 
-    if (sourceCurrency === 'USD' && currency === 'INR') {
-      finalAmount = Math.round(amount * INR_PER_USD);
-    } else if (sourceCurrency === 'INR' && currency === 'USD') {
-      finalAmount = Math.round(amount / INR_PER_USD);
+    if (sourceCurrency === 'USD' && targetCurrency === 'INR') {
+      return Math.round(amount * INR_PER_USD);
     }
+    if (sourceCurrency === 'INR' && targetCurrency === 'USD') {
+      return Math.round(amount / INR_PER_USD);
+    }
+    return amount;
+  };
+
+  const formatPrice = (amount: number, sourceCurrency: Currency = 'USD'): string => {
+    const finalAmount = convertAmount(amount, sourceCurrency, currency);
 
     if (currency === 'INR') {
       return `₹${finalAmount.toLocaleString('en-IN')}`;
@@ -50,7 +63,16 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, toggleCurrency, formatPrice }}>
+    <CurrencyContext.Provider
+      value={{
+        currency,
+        setCurrency,
+        toggleCurrency,
+        formatPrice,
+        convertAmount,
+        rate: INR_PER_USD,
+      }}
+    >
       {children}
     </CurrencyContext.Provider>
   );

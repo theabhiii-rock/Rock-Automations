@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useCurrency } from "@/context/CurrencyContext";
 import { 
   Search, 
   MessageSquare, 
@@ -33,7 +34,8 @@ const services = [
       "Contact Research",
       "Market Segmentation",
     ],
-    price: "Starting ₹4,999/month",
+    startingPriceInr: 4999,
+    period: "/month",
     priceNote: "Configured to your target cities and sectors",
     tag: "DISCOVERY",
     tagColor: "bg-amber-400 text-black",
@@ -54,7 +56,8 @@ const services = [
       "Lead Qualification",
       "Outreach Campaigns",
     ],
-    price: "Starting ₹6,999/month",
+    startingPriceInr: 6999,
+    period: "/month",
     priceNote: "Controlled, compliant & personalized cadences",
     tag: "OUTREACH",
     tagColor: "bg-emerald-400 text-black",
@@ -75,7 +78,8 @@ const services = [
       "WhatsApp Integration",
       "SEO Foundations",
     ],
-    price: "Starting ₹14,999 one-time",
+    startingPriceInr: 14999,
+    period: " one-time",
     priceNote: "High-performance Next.js architecture",
     tag: "DIGITAL",
     tagColor: "bg-cyan-400 text-black",
@@ -96,7 +100,8 @@ const services = [
       "Data Synchronization",
       "Custom Business Automations",
     ],
-    price: "Starting ₹7,999/month",
+    startingPriceInr: 7999,
+    period: "/month",
     priceNote: "Custom integrations and webhook triggers",
     tag: "WORKFLOW",
     tagColor: "bg-yellow-400 text-black",
@@ -117,7 +122,8 @@ const services = [
       "Retention Automation",
       "Performance Insights",
     ],
-    price: "Starting ₹3,999/month",
+    startingPriceInr: 3999,
+    period: "/month",
     priceNote: "Ongoing performance reviews and reviews flow",
     tag: "RETENTION",
     tagColor: "bg-purple-400 text-black",
@@ -168,6 +174,7 @@ const faqs = [
 
 export default function ServicesPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { formatPrice } = useCurrency();
 
   return (
     <div className="w-full bg-[#07090E] text-white min-h-screen py-16 px-4 sm:px-6 lg:px-8">
@@ -258,7 +265,7 @@ export default function ServicesPage() {
                   <div className="pt-6 mt-6 border-t border-slate-800 space-y-3">
                     <div>
                       <div className="text-base font-bold text-amber-300 font-mono">
-                        {svc.price}
+                        Starting {formatPrice(svc.startingPriceInr, 'INR')}{svc.period}
                       </div>
                       <div className="text-[11px] text-slate-400">
                         {svc.priceNote}

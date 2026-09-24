@@ -187,8 +187,8 @@ export default function ClientDashboardPage() {
                     <div className="text-left sm:text-right">
                       <div className="text-lg font-bold text-white font-mono">
                         {p.budget_min && p.budget_max
-                          ? `${formatPrice(p.budget_min)} - ${formatPrice(p.budget_max)}`
-                          : formatPrice(p.budget_min || p.budget_max || 5000)}
+                          ? `${formatPrice(p.budget_min, p.currency || 'INR')} - ${formatPrice(p.budget_max, p.currency || 'INR')}`
+                          : formatPrice(p.budget_min || p.budget_max || 5000, p.currency || 'INR')}
                       </div>
                       <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 sm:justify-end">
                         <span className="w-2 h-2 rounded-full bg-emerald-400"></span>

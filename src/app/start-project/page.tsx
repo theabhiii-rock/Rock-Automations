@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -22,14 +22,26 @@ import {
 export default function StartProjectPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { currency, formatPrice } = useCurrency();
+  const { currency, formatPrice, convertAmount } = useCurrency();
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("AI & Automation");
   const [description, setDescription] = useState("");
   const [budgetType, setBudgetType] = useState<"fixed" | "hourly">("fixed");
-  const [budgetMin, setBudgetMin] = useState<number>(5000);
-  const [budgetMax, setBudgetMax] = useState<number>(20000);
+  const [budgetMin, setBudgetMin] = useState<number>(() => (currency === "USD" ? 60 : 5000));
+  const [budgetMax, setBudgetMax] = useState<number>(() => (currency === "USD" ? 240 : 20000));
+
+  const prevCurrencyRef = useRef(currency);
+
+  useEffect(() => {
+    if (prevCurrencyRef.current !== currency) {
+      const prevCurr = prevCurrencyRef.current;
+      setBudgetMin((prev) => convertAmount(prev, prevCurr, currency));
+      setBudgetMax((prev) => convertAmount(prev, prevCurr, currency));
+      prevCurrencyRef.current = currency;
+    }
+  }, [currency, convertAmount]);
+
   const [timeline, setTimeline] = useState("2-4 weeks");
   const [skills, setSkills] = useState(["WhatsApp API", "Python", "Automation", "Next.js"]);
   const [skillInput, setSkillInput] = useState("");
@@ -265,23 +277,33 @@ export default function StartProjectPage() {
                     <label className="block text-xs font-medium text-slate-400 mb-1">
                       Min Estimated Budget ({currency})
                     </label>
-                    <input
-                      type="number"
-                      value={budgetMin}
-                      onChange={(e) => setBudgetMin(Number(e.target.value))}
-                      className="w-full bg-[#0D111A] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-amber-400 select-none pointer-events-none">
+                        {currency === "INR" ? "₹" : "$"}
+                      </span>
+                      <input
+                        type="number"
+                        value={budgetMin}
+                        onChange={(e) => setBudgetMin(Number(e.target.value))}
+                        className="w-full bg-[#0D111A] border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1">
                       Max Target Budget ({currency})
                     </label>
-                    <input
-                      type="number"
-                      value={budgetMax}
-                      onChange={(e) => setBudgetMax(Number(e.target.value))}
-                      className="w-full bg-[#0D111A] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-amber-400 select-none pointer-events-none">
+                        {currency === "INR" ? "₹" : "$"}
+                      </span>
+                      <input
+                        type="number"
+                        value={budgetMax}
+                        onChange={(e) => setBudgetMax(Number(e.target.value))}
+                        className="w-full bg-[#0D111A] border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

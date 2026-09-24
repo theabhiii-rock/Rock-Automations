@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import {
@@ -20,12 +20,22 @@ import {
 
 export default function ProfessionalDashboard() {
   const { user } = useAuth();
-  const { formatPrice, currency } = useCurrency();
+  const { formatPrice, currency, convertAmount } = useCurrency();
 
   const [enquiries, setEnquiries] = useState<any[]>([]);
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
-  const [calcBudget, setCalcBudget] = useState<number>(50000);
+  const [calcBudget, setCalcBudget] = useState<number>(() => (currency === 'USD' ? 600 : 50000));
+  const prevCurrencyRef = useRef(currency);
+
+  useEffect(() => {
+    if (prevCurrencyRef.current !== currency) {
+      const prevCurr = prevCurrencyRef.current;
+      setCalcBudget((prev) => convertAmount(prev, prevCurr, currency));
+      prevCurrencyRef.current = currency;
+    }
+  }, [currency, convertAmount]);
+
   const [loading, setLoading] = useState(true);
 
   // Add Project Modal State
@@ -233,15 +243,20 @@ export default function ProfessionalDashboard() {
             {/* Fee Breakdown Calculator */}
             <div className="p-4 rounded-xl bg-[#07090E] border border-slate-800 space-y-3 text-xs">
               <div className="flex items-center justify-between text-slate-300">
-                <span className="font-semibold">Simulate Project Budget:</span>
-                <input
-                  type="number"
-                  min="1000"
-                  step="1000"
-                  value={calcBudget}
-                  onChange={(e) => setCalcBudget(Math.max(0, parseFloat(e.target.value) || 0))}
-                  className="w-32 px-2.5 py-1 bg-[#0D111A] border border-slate-700 rounded-lg text-white text-right text-xs focus:outline-none focus:border-amber-400"
-                />
+                <span className="font-semibold">Simulate Project Budget ({currency}):</span>
+                <div className="relative flex items-center">
+                  <span className="absolute left-2.5 text-xs text-amber-400 font-semibold pointer-events-none select-none">
+                    {currency === 'INR' ? '₹' : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    min={currency === 'USD' ? 10 : 1000}
+                    step={currency === 'USD' ? 10 : 1000}
+                    value={calcBudget}
+                    onChange={(e) => setCalcBudget(Math.max(0, parseFloat(e.target.value) || 0))}
+                    className="w-36 pl-6 pr-2.5 py-1 bg-[#0D111A] border border-slate-700 rounded-lg text-white text-right text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </div>
               </div>
               <div className="h-[1px] bg-slate-800 my-1" />
               <div className="flex justify-between items-center text-slate-300">

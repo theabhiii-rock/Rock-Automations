@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import RazorpayCheckoutButton from '@/components/ui/RazorpayCheckoutButton';
 import { MessageCircle, Sparkles, Check, X, ArrowRight } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const plans = [
   {
@@ -124,6 +125,7 @@ const faqs = [
 
 export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { currency, formatPrice } = useCurrency();
 
   return (
     <main className="min-h-screen bg-[#07090E] text-white">
@@ -156,102 +158,112 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="max-w-7xl mx-auto px-4 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative flex flex-col justify-between rounded-2xl overflow-hidden transition-all duration-300 h-full ${
-                plan.highlight
-                  ? 'border-2 border-amber-400 shadow-[0_0_50px_rgba(251,191,36,0.2)] lg:-translate-y-2 bg-[#0D111A]'
-                  : 'border border-slate-800 bg-[#0D111A] hover:border-amber-500/30'
-              }`}
-            >
-              {/* Badges */}
-              {plan.badge && (
-                <div
-                  className={`absolute top-3 right-3 text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-md ${
-                    plan.highlight
-                      ? 'bg-amber-400 text-black border border-amber-300'
-                      : 'bg-slate-800 text-slate-200 border border-slate-700'
-                  }`}
-                >
-                  {plan.badge}
-                </div>
-              )}
+          {plans.map((plan) => {
+            const displayPrice = plan.amount > 0 ? formatPrice(plan.amount, 'INR') : 'Custom';
+            const whatsappUrl = plan.amount > 0
+              ? `https://wa.me/916209817520?text=${encodeURIComponent(`Hi! I am interested in the ${plan.name} plan (${displayPrice}${plan.period}).`)}`
+              : `https://wa.me/916209817520?text=${encodeURIComponent(`Hi! I have custom automation requirements for my business.`)}`;
+            const payButtonLabel = currency === 'USD'
+              ? `Pay ${displayPrice} (~₹${plan.amount.toLocaleString('en-IN')}) Online`
+              : `Pay ${displayPrice} Online (Razorpay)`;
 
-              <div className="p-6 space-y-5">
-                <div>
-                  <h3 className="text-xl font-black tracking-tight text-white">
-                    {plan.name}
-                  </h3>
-                  <p className="text-xs text-slate-300 font-normal mt-1 leading-relaxed min-h-[40px]">
-                    {plan.tagline}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-800">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-white font-mono">
-                      {plan.price}
-                    </span>
-                    <span className="text-xs font-mono text-slate-400">
-                      {plan.period}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Features List */}
-                <ul className="space-y-2.5 pt-2 border-t border-slate-800">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-xs">
-                      {feature.included ? (
-                        <div className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">
-                          <X className="w-3 h-3" />
-                        </div>
-                      )}
-                      <span className={feature.included ? 'text-slate-200 font-medium' : 'text-slate-500 line-through'}>
-                        {feature.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Actions: Razorpay / WhatsApp */}
-              <div className="p-6 pt-0 space-y-2.5">
-                {plan.amount > 0 ? (
-                  <RazorpayCheckoutButton
-                    planName={`${plan.name} Plan`}
-                    amount={plan.amount}
-                    buttonText={`Pay ${plan.price} Online (Razorpay)`}
-                    className={`w-full py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            return (
+              <div
+                key={plan.id}
+                className={`relative flex flex-col justify-between rounded-2xl overflow-hidden transition-all duration-300 h-full ${
+                  plan.highlight
+                    ? 'border-2 border-amber-400 shadow-[0_0_50px_rgba(251,191,36,0.2)] lg:-translate-y-2 bg-[#0D111A]'
+                    : 'border border-slate-800 bg-[#0D111A] hover:border-amber-500/30'
+                }`}
+              >
+                {/* Badges */}
+                {plan.badge && (
+                  <div
+                    className={`absolute top-3 right-3 text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-md ${
                       plan.highlight
-                        ? 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black shadow-md shadow-amber-500/20 active:scale-98'
-                        : 'bg-amber-400 hover:bg-amber-300 text-black font-extrabold active:scale-98'
+                        ? 'bg-amber-400 text-black border border-amber-300'
+                        : 'bg-slate-800 text-slate-200 border border-slate-700'
                     }`}
-                  />
-                ) : null}
+                  >
+                    {plan.badge}
+                  </div>
+                )}
 
-                <a
-                  href={plan.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                    plan.amount === 0
-                      ? 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-extrabold shadow-md shadow-amber-500/20'
-                      : 'bg-[#131826] hover:bg-[#1a2133] text-slate-200 hover:text-white border border-slate-700 hover:border-amber-400'
-                  }`}
-                >
-                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                  <span>{plan.amount === 0 ? 'Discuss on WhatsApp' : 'Inquire on WhatsApp'}</span>
-                </a>
+                <div className="p-6 space-y-5">
+                  <div>
+                    <h3 className="text-xl font-black tracking-tight text-white">
+                      {plan.name}
+                    </h3>
+                    <p className="text-xs text-slate-300 font-normal mt-1 leading-relaxed min-h-[40px]">
+                      {plan.tagline}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-white font-mono">
+                        {displayPrice}
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {plan.period}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Features List */}
+                  <ul className="space-y-2.5 pt-2 border-t border-slate-800">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-xs">
+                        {feature.included ? (
+                          <div className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">
+                            <X className="w-3 h-3" />
+                          </div>
+                        )}
+                        <span className={feature.included ? 'text-slate-200 font-medium' : 'text-slate-500 line-through'}>
+                          {feature.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Actions: Razorpay / WhatsApp */}
+                <div className="p-6 pt-0 space-y-2.5">
+                  {plan.amount > 0 ? (
+                    <RazorpayCheckoutButton
+                      planName={`${plan.name} Plan`}
+                      amount={plan.amount}
+                      buttonText={payButtonLabel}
+                      className={`w-full py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        plan.highlight
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black shadow-md shadow-amber-500/20 active:scale-98'
+                          : 'bg-amber-400 hover:bg-amber-300 text-black font-extrabold active:scale-98'
+                      }`}
+                    />
+                  ) : null}
+
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                      plan.amount === 0
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black font-extrabold shadow-md shadow-amber-500/20'
+                        : 'bg-[#131826] hover:bg-[#1a2133] text-slate-200 hover:text-white border border-slate-700 hover:border-amber-400'
+                    }`}
+                  >
+                    <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                    <span>{plan.amount === 0 ? 'Discuss on WhatsApp' : 'Inquire on WhatsApp'}</span>
+                  </a>
+                </div>
+
               </div>
-
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

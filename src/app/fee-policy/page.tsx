@@ -34,7 +34,7 @@ export default function FeePolicyPage() {
               NET PROFESSIONAL PAYOUT = GROSS ESCROW MILESTONE - (GROSS × 20%)
             </div>
             <div className="text-xs text-slate-400">
-              Example: On a ₹50,000 Milestone → ₹10,000 Platform Fee (20%) → ₹40,000 Disbursed to Professional (80%)
+              Example: On a {formatPrice(50000, 'INR')} Milestone → {formatPrice(10000, 'INR')} Platform Fee (20%) → {formatPrice(40000, 'INR')} Disbursed to Professional (80%)
             </div>
           </div>
         </section>
@@ -52,7 +52,7 @@ export default function FeePolicyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-white">3. Annual Professional Membership Fee</h2>
           <p>
-            An annual fee of <code className="text-amber-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">₹4,999</code> is billed upon verification submission. This directly subsidizes the senior engineering time required to inspect applicant source repositories and verify personal credentials.
+            An annual fee of <code className="text-amber-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">{formatPrice(4999, 'INR')}</code> is billed upon verification submission. This directly subsidizes the senior engineering time required to inspect applicant source repositories and verify personal credentials.
           </p>
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
             <strong>Disclosure:</strong> The membership fee does not guarantee client placement, job volume, or revenue. It grants access to the verified network and indexed directory presence.
